@@ -53,7 +53,9 @@ def get_quotes_for_symbol(symbol):
     date = info['07. latest trading day']
     last_price = info['05. price']
 
-    if symbol.endswith('.DE') or symbol.endswith('.AMS'):
+    if symbol.endswith('.DE') or \
+       symbol.endswith('.AMS') or \
+       symbol.endswith('.AS'):
         currency = 'EUR'
     else:
         currency = 'USD'
@@ -120,7 +122,7 @@ def test_self():
         close_fds=True
     )
     try:
-        proc.stdin.write(b'(alphavantage "VOO""VUSA.AMS")')
+        proc.stdin.write(b'(alphavantage "VOO""VUSA.AS")')
         proc.stdin.write(b'(currency "USD""EUR")')
         proc.stdin.close()
         proc.wait()
