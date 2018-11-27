@@ -99,7 +99,8 @@ def query_alphavantage(**kwargs):
     while True:
         log('HTTP request: {}'.format(url))
         result = requests.get(url).json()
-        if 'Information' in result:
+        log('Response: {}'.format(result))
+        if 'Note' in result:
             log('Detected rate limiting: {}'.format(result))
             log('Sleeping for {} seconds.'.format(timeout_sec))
             time.sleep(timeout_sec)
@@ -137,4 +138,8 @@ if __name__ == '__main__':
     if '--test' in sys.argv:
         test_self()
     else:
-        main()
+        try:
+            main()
+        except:
+            log(str(sys.exc_info()[0]))
+            raise
