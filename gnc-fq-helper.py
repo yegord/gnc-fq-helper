@@ -64,7 +64,7 @@ def get_quotes_for_symbol(symbol):
         '("{symbol}"'
         ' (symbol . "{symbol}")'
         ' (gnc:time-no-zone . "{date} 12:00:00")'
-        ' (last . {last_price})'
+        ' (last . #e{last_price})'
         ' (currency . "{currency}")'
         ')'
     ).format(**locals())
@@ -84,7 +84,7 @@ def get_exchange_rate(to_currency, from_currency):
         '(("{from_currency}"'
         '  (symbol . "{from_currency}")'
         '  (gnc:time-no-zone . "{time}")'
-        '  (last . {last_price})'
+        '  (last . #e{last_price})'
         '  (currency . "{to_currency}")'
         '))'
     ).format(**locals())
