@@ -70,15 +70,25 @@ def get_quotes_for_symbol(symbol):
     ).format(**locals())
 
 
+cached_exchange_rates = None
+
+def get_exchange_rates():
+    global cached_exchange_rates
+
+    if cached_exchange_rates is None:
+        info = requests.get('https://api.exchangerate.host/latest').json()
+        info['rates'].setdefault(info['base'], 1.0)
+        log('Exchange rates: {}'.format(info))
+        cached_exchange_rates = info
+
+    return cached_exchange_rates
+
+
 def get_exchange_rate(to_currency, from_currency):
-    response = query_alphavantage(
-        function='CURRENCY_EXCHANGE_RATE',
-        from_currency=from_currency,
-        to_currency=to_currency
-    )
-    info = response['Realtime Currency Exchange Rate']
-    last_price = info['5. Exchange Rate']
-    time = info['6. Last Refreshed']
+    info = get_exchange_rates()
+
+    time = info['date'] + '00:00:00'
+    last_price = info['rates'][to_currency] / info['rates'][from_currency]
 
     return (
         '(("{from_currency}"'
