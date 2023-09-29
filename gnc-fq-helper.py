@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 
+import datetime
 import os
 import regex
 import requests
 import sys
 import time
+import traceback
 import urllib.parse
 
 
@@ -76,8 +78,11 @@ def get_exchange_rates():
     global cached_exchange_rates
 
     if cached_exchange_rates is None:
-        info = requests.get('https://api.exchangerate.host/latest').json()
-        info['rates'].setdefault(info['base'], 1.0)
+        info = requests.get('http://api.exchangerate.host/historical?' + urllib.parse.urlencode(dict(
+            access_key=os.environ['EXCHANGERATE_API_KEY'],
+            date=datetime.datetime.now().strftime('%Y-%m-%d')),
+        )).json()
+        info['quotes'][info['source'] + info['source']] = 1.0
         log('Exchange rates: {}'.format(info))
         cached_exchange_rates = info
 
@@ -88,7 +93,7 @@ def get_exchange_rate(to_currency, from_currency):
     info = get_exchange_rates()
 
     time = info['date'] + '00:00:00'
-    last_price = info['rates'][to_currency] / info['rates'][from_currency]
+    last_price = info['quotes'][info['source'] + to_currency] / info['quotes'][info['source'] + from_currency]
 
     return (
         '(("{from_currency}"'
@@ -152,4 +157,7 @@ if __name__ == '__main__':
             main()
         except:
             log(str(sys.exc_info()[0]))
+            log(str(sys.exc_info()[1]))
+            for line in traceback.format_tb(sys.exc_info()[2]):
+                log(line)
             raise
