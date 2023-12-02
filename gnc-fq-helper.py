@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 
 import datetime
+import json
 import os
 import regex
-import requests
 import sys
 import time
 import traceback
 import urllib.parse
+import urllib.request
 
 
 def main():
@@ -78,10 +79,13 @@ def get_exchange_rates():
     global cached_exchange_rates
 
     if cached_exchange_rates is None:
-        info = requests.get('http://api.exchangerate.host/historical?' + urllib.parse.urlencode(dict(
-            access_key=os.environ['EXCHANGERATE_API_KEY'],
-            date=datetime.datetime.now().strftime('%Y-%m-%d')),
-        )).json()
+        qs = urllib.parse.urlencode({
+            'access_key': os.environ['EXCHANGERATE_API_KEY'],
+            'date': datetime.datetime.now().strftime('%Y-%m-%d')
+        })
+
+        resp = urllib.request.urlopen('http://api.exchangerate.host/historical?' + qs)
+        info = json.loads(resp.read().decode())
         info['quotes'][info['source'] + info['source']] = 1.0
         log('Exchange rates: {}'.format(info))
         cached_exchange_rates = info
@@ -113,7 +117,8 @@ def query_alphavantage(**kwargs):
 
     while True:
         log('HTTP request: {}'.format(url))
-        result = requests.get(url).json()
+        resp = urllib.request.urlopen(url)
+        result = json.loads(resp.read().decode())
         log('Response: {}'.format(result))
         if 'Note' in result:
             log('Detected rate limiting: {}'.format(result))
