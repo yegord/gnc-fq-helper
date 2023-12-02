@@ -3,7 +3,7 @@
 import datetime
 import json
 import os
-import regex
+import re
 import sys
 import time
 import traceback
@@ -27,12 +27,18 @@ def main():
 def handle_query(query):
     log('Query: {}'.format(query))
 
-    match = regex.match(r'^\s*\(\s*([^ ]+)\s+(?:"([^"]+)"\s*)+\)$', query)
+    match = re.match(
+        r'^\s*\(\s*'  # Start S expression
+        r'([^ ]+)\s+'  # Method (e.g. `alphavantage`)
+        r'(?:"([^"]+)"\s*)+'  # symbols (e.g. `'"VTSAX" "VTIAX"'`)
+        r'\)$',  # End S expression
+        query
+    )
     if not match:
         raise RuntimeError('Invalid query: {}'.format(query))
 
     method = match.group(1)
-    symbols = match.captures(2)
+    symbols = re.findall('"([^"]+)"', query)
 
     if method == 'alphavantage':
         return get_quotes_for_symbols(symbols)
